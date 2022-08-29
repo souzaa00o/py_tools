@@ -43,7 +43,7 @@ def get_stack_resource(stacks_names, cf):
 
 
 def get_function_configuration(lf, stack_resources):
-    rname_result = []
+    # rname_result = []
 
     for stack in stack_resources:
         function_name = stack["function_name"]
@@ -52,37 +52,36 @@ def get_function_configuration(lf, stack_resources):
         except Exception:
             continue
 
-        role_info = {
-            "stack_name": stack["stack_name"],
-            "function_name": function_name,
-            "role": configuration["Role"].split('/')[1]
-        }
+        stack['role'] = configuration["Role"].split('/')[1]
+
+        # role_info = {
+        #     "stack_name": stack["stack_name"],
+        #     "function_name": function_name,
+        #     "role": configuration["Role"].split('/')[1]
+        # }
             
-        rname_result.append(role_info)
+        # rname_result.append(role_info)
     
-    return rname_result
+    return stack_resources
 
 def get_attached_role_policies(iamf, role_resources):
     pname_result = []
-
+    
     for role in role_resources:
-        role_name = role["role"]
+        role_name = role.get("role")
         try:
             policy = iamf.list_attached_role_policies(RoleName=role_name)
         except Exception:
             continue
-
-        policy_info = {
-            "stack_name": role["stack_name"],
-            "function_name": role["function_name"],
-            "role": role["role"],
-            "policies": policy["AttachedPolicies"]
-        }
-
-        pname_result.append(policy_info)
-
+        
+        for policy in policy["AttachedPolicies"]:
+            pname_result.append({
+                "stack_name": role["stack_name"],
+                "function_name": role["function_name"],
+                "policies": policy
+            })
+    print(pname_result)
     return pname_result
-
 
 
 main()
